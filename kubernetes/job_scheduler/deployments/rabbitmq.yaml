@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orakel-backend-api-rabbitmq
+  namespace: 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orakel-backend-api-rabbitmq
+  template:
+    metadata:
+      labels:
+        app: orakel-backend-api-rabbitmq
+    spec:
+      imagePullSecrets:
+        - name: orakel-gui-iamge-pull-secret
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3.8-alpine
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  [
+                    "/bin/sh",
+                    "-c",
+                    "rabbitmq-plugins --offline enable rabbitmq_management",
+                  ]
+          ports:
+            - containerPort: 5672
+            - containerPort: 15672
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1"
+            limits:
+              memory: "2Gi"
+              cpu: "1"

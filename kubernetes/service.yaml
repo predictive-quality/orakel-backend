@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: orakel-backend-api
+  namespace: 
+spec:
+  selector:
+    app: orakel-backend-api
+  ports:
+    - name: django-web
+      protocol: TCP
+      port: 80
+      targetPort:  8000

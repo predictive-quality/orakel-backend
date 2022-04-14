@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: orakel-backend-api-rabbitmq
+  namespace:
+spec:
+  ports:
+    - port: 5672
+      name: "5672"
+    - port: 15672
+      name: "15672"
+  selector:
+    app: orakel-backend-api-rabbitmq
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orakel-backend-api-flower
+  namespace: 
+spec:
+  ports:
+    - name: flower-web
+      protocol: TCP
+      port: 5555
+      targetPort: 5555
+  selector:
+    app: orakel-backend-api-flower

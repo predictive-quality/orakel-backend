@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orakel-backend-api-flower
+  namespace:
+spec:
+  selector:
+    matchLabels:
+      app: orakel-backend-api-flower
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: orakel-backend-api-flower
+        build: first-commit
+    spec:
+      imagePullSecrets:
+        - name: orakel-gui-iamge-pull-secret
+      containers:
+        - name: flower
+          image: registry.git-ce.rwth-aachen.de/wzl-mq-ms-rpc/code/research/predictive-quality/orakel-gui/orakel_backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5555
+              name: flower-web
+              protocol: TCP
+          resources:
+            requests:
+              memory: "0.2Gi"
+              cpu: "0.2"
+            limits:
+              memory: "0.2Gi"
+              cpu: "0.2"
+          command:
+            [
+              "celery",
+              "-A",
+              "job_scheduler",
+              "flower",
+              "--basic_auth=",
+              "--broker_api=http://guest:guest@orakel-backend-api-rabbitmq:15672/api/",
+            ]
+          env:
+            - name: FLOWER_URL
+              value: "orakel-backend-api-flower"
+            - name: CELERY_BROKER_URL
+              value: "amqp://guest:guest@orakel-backend-api-rabbitmq:5672"
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: orakel-backend-secret-key
+                  key: key
+            - name: DEBUG
+              value: "False"
+            - name: HOST_DB
+              value: "orakel-backend-mysql-default"
+            - name: MEMCACHED
+              value: "memcached-1:11211,memcached-2:11211"
+            - name: MEMCACHED_BOOL
+              value: "False"
+            - name: superuser_username
+              valueFrom:
+                secretKeyRef:
+                  name: django-superuser-secret
+                  key: username
+            - name: superuser_password
+              valueFrom:
+                secretKeyRef:
+                  name: django-superuser-secret
+                  key: password
+            - name: superuser_email
+              valueFrom:
+                secretKeyRef:
+                  name: django-superuser-secret
+                  key: email
+            - name: mysql_user
+              valueFrom:
+                secretKeyRef:
+                  name: orakel-backend-mysql-secret
+                  key: mysql_user
+            - name: mysql_password
+              valueFrom:
+                secretKeyRef:
+                  name: orakel-backend-mysql-secret
+                  key: mysql_password
+            - name: mysql_database
+              valueFrom:
+                secretKeyRef:
+                  name: orakel-backend-mysql-secret
+                  key: mysql_database

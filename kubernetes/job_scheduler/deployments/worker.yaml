@@ -1,0 +1,218 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orakel-backend-api-celery-worker-large
+  namespace:
+spec:
+  selector:
+    matchLabels:
+      app: orakel-backend-api-celery-worker-large
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: orakel-backend-api-celery-worker-large
+        build: first-commit
+    spec:
+      imagePullSecrets:
+        - name: orakel-gui-iamge-pull-secret
+      volumes:
+        - name: s3-config-vol
+          secret:
+            secretName: s3-predictive-quality-creds
+      containers:
+        - image: registry.git-ce.rwth-aachen.de/wzl-mq-ms-rpc/code/research/predictive-quality/orakel-gui/orakel_backend:latest
+          imagePullPolicy: Always
+          name: orakel-backend-api-celery-worker-large
+          volumeMounts:
+            - name: s3-config-vol
+              mountPath: "/code/s3config"
+          resources:
+            requests:
+              memory: "7Gi"
+              cpu: "2"
+            limits:
+              memory: "8Gi"
+              cpu: "2"
+          command:
+            [
+              "celery",
+              "-A",
+              "job_scheduler",
+              "worker",
+              "--queues",
+              "large_task",
+              "--concurrency",
+              "1",
+              "-l",
+              "INFO",
+              "-n",
+              "large_worker@%h",
+            ]
+          env:
+            - name: CELERY_BROKER_URL
+              value: "amqp://guest:guest@orakel-backend-api-rabbitmq:5672"
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: orakel-backend-secret-key
+                  key: key
+            - name: DEBUG
+              value: "False"
+            - name: HOST_DB
+              value: "orakel-backend-mysql-default"
+            - name: MEMCACHED
+              value: "memcached-1:11211,memcached-2:11211"
+            - name: MEMCACHED_BOOL
+              value: "False"
+            - name: ARGO_API_EXEC_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: argo-api-token
+                  key: token
+            - name: superuser_username
+              valueFrom:
+                secretKeyRef:
+                  name: django-superuser-secret
+                  key: username
+            - name: superuser_password
+              valueFrom:
+                secretKeyRef:
+                  name: django-superuser-secret
+                  key: password
+            - name: superuser_email
+              valueFrom:
+                secretKeyRef:
+                  name: django-superuser-secret
+                  key: email
+            - name: mysql_user
+              valueFrom:
+                secretKeyRef:
+                  name: orakel-backend-mysql-secret
+                  key: mysql_user
+            - name: mysql_password
+              valueFrom:
+                secretKeyRef:
+                  name: orakel-backend-mysql-secret
+                  key: mysql_password
+            - name: mysql_database
+              valueFrom:
+                secretKeyRef:
+                  name: orakel-backend-mysql-secret
+                  key: mysql_database
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orakel-backend-api-celery-worker-small
+  namespace:
+spec:
+  selector:
+    matchLabels:
+      app: orakel-backend-api-celery-worker-small
+  replicas: 4
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: orakel-backend-api-celery-worker-small
+        build: first-commit
+    spec:
+      imagePullSecrets:
+        - name: orakel-gui-iamge-pull-secret
+      volumes:
+        - name: s3-config-vol
+          secret:
+            secretName: s3-predictive-quality-creds
+      containers:
+        - image: registry.git-ce.rwth-aachen.de/wzl-mq-ms-rpc/code/research/predictive-quality/orakel-gui/orakel_backend:latest
+          imagePullPolicy: Always
+          name: orakel-backend-api-celery-worker-small
+          volumeMounts:
+            - name: s3-config-vol
+              mountPath: "/code/s3config"
+          resources:
+            requests:
+              memory: "500Mi"
+              cpu: "0.25"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+          command:
+            [
+              "celery",
+              "-A",
+              "job_scheduler",
+              "worker",
+              "--queues",
+              "small_task",
+              "--concurrency",
+              "2",
+              "-l",
+              "INFO",
+              "-n",
+              "small_worker@%h",
+            ]
+          env:
+            - name: CELERY_BROKER_URL
+              value: "amqp://guest:guest@orakel-backend-api-rabbitmq:5672"
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: orakel-backend-secret-key
+                  key: key
+            - name: DEBUG
+              value: "False"
+            - name: HOST_DB
+              value: "orakel-backend-mysql-default"
+            - name: MEMCACHED
+              value: "memcached-1:11211,memcached-2:11211"
+            - name: MEMCACHED_BOOL
+              value: "False"
+            - name: ARGO_API_EXEC_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: argo-api-token
+                  key: token
+            - name: superuser_username
+              valueFrom:
+                secretKeyRef:
+                  name: django-superuser-secret
+                  key: username
+            - name: superuser_password
+              valueFrom:
+                secretKeyRef:
+                  name: django-superuser-secret
+                  key: password
+            - name: superuser_email
+              valueFrom:
+                secretKeyRef:
+                  name: django-superuser-secret
+                  key: email
+            - name: mysql_user
+              valueFrom:
+                secretKeyRef:
+                  name: orakel-backend-mysql-secret
+                  key: mysql_user
+            - name: mysql_password
+              valueFrom:
+                secretKeyRef:
+                  name: orakel-backend-mysql-secret
+                  key: mysql_password
+            - name: mysql_database
+              valueFrom:
+                secretKeyRef:
+                  name: orakel-backend-mysql-secret
+                  key: mysql_database

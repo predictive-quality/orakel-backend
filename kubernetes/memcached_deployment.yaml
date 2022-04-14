@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: memcached-1
+  namespace:
+spec:
+  ports:
+    - port: 11211
+  selector:
+    app: memcached-1
+  clusterIP: None
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: memcached-2
+  namespace:
+spec:
+  ports:
+    - port: 11211
+  selector:
+    app: memcached-2
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: memcached-1
+  namespace:
+spec:
+  selector:
+    matchLabels:
+      app: memcached-1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: memcached-1
+    spec:
+      containers:
+        - image: memcached:1.6.9
+          imagePullPolicy: Always
+          name: memcached-1
+          ports:
+            - containerPort: 11211
+              name: memcached
+              protocol: TCP
+          resources:
+            requests:
+              memory: "7Gi"
+              cpu: "0.5"
+            limits:
+              memory: "8Gi"
+              cpu: "0.5"
+          args:
+            - -m 8000
+            - -I 100m
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: memcached-2
+  namespace:
+spec:
+  selector:
+    matchLabels:
+      app: memcached-2
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: memcached-2
+    spec:
+      containers:
+        - image: memcached:1.6.9
+          imagePullPolicy: Always
+          name: memcached-2
+          ports:
+            - containerPort: 11211
+              name: memcached
+              protocol: TCP
+          resources:
+            requests:
+              memory: "7Gi"
+              cpu: "0.5"
+            limits:
+              memory: "8Gi"
+              cpu: "0.5"
+          args:
+            - -m 8000
+            - -I 100m
