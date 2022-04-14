@@ -27,36 +27,37 @@ Remove the task from Periodic Tasks at the django admin interface.
       - add url of application in line 44
 
   3.) Set up kubernetes Secrets and files
-    - orakel-backend-secret-key (kubernetes/secret-key.yaml)
-        - set correct namespace
-        - create a new secret key (python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())")
-        - encode the created secret key to base64 (echo -n "STRING" | base64) and fill it in the "orakel-backend-secret-key" secret under "key".
+  
+  - orakel-backend-secret-key (kubernetes/secret-key.yaml)
+      - set correct namespace
+      - create a new secret key (python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())")
+      - encode the created secret key to base64 (echo -n "STRING" | base64) and fill it in the "orakel-backend-secret-key" secret under "key".
 
-    - superuser-secret (kubernetes/superuser-secret.yaml)
-        - set correct namespace
-        - add username, password and e-mail for django-superuser. (NO ENCODING REQUIRED)
+  - superuser-secret (kubernetes/superuser-secret.yaml)
+      - set correct namespace
+      - add username, password and e-mail for django-superuser. (NO ENCODING REQUIRED)
 
-    - mysql-secret (kubernetes/mysql/secret.yaml)
-        - set correct namespace
-        - set root_password, mysql_user, mysql_password and mysql_database for the databases. (ENCODE TO BASE64 as described for orakel-backend-secret-key)
+  - mysql-secret (kubernetes/mysql/secret.yaml)
+      - set correct namespace
+      - set root_password, mysql_user, mysql_password and mysql_database for the databases. (ENCODE TO BASE64 as described for orakel-backend-secret-key)
 
-    - argo-api-token (kubernetes/argo/secret.yaml)
-        - set correct namespace
-        - set the ARGO_API_EXEC_TOKEN as base64 encoded value
+  - argo-api-token (kubernetes/argo/secret.yaml)
+      - set correct namespace
+      - set the ARGO_API_EXEC_TOKEN as base64 encoded value
 
-    - kubernetes/job_scheduler/deployments/flower.yaml
-        - set correct namespace in line 5
-        - set authentication for flower in line 42 (--basic_auth=$USERNAME$:$PASSWORD$)
+  - kubernetes/job_scheduler/deployments/flower.yaml
+      - set correct namespace in line 5
+      - set authentication for flower in line 42 (--basic_auth=$USERNAME$:$PASSWORD$)
 
-    - kubernetes/mqtt_kolibri/deployment.yaml
-        - set "MQTT_RECEIVER_USERNAME", "MQTT_BROKER", "MQTT_VHOST", "MQTT_KOLIBRI_TOPIC"
-        - fill the "MQTT_RECEIVER_PASSWORD" as base64 encoded in the secret file (kubernetes/mqtt_kolibri/secret.yaml)
+  - kubernetes/mqtt_kolibri/deployment.yaml
+      - set "MQTT_RECEIVER_USERNAME", "MQTT_BROKER", "MQTT_VHOST", "MQTT_KOLIBRI_TOPIC"
+      - fill the "MQTT_RECEIVER_PASSWORD" as base64 encoded in the secret file (kubernetes/mqtt_kolibri/secret.yaml)
 
   4.) prepare remaining kubernetes files
-    - set correct namespace for remaining deployments, services, configmaps and volumes.
-    - create a new volume, deployment and service for each database needed for the specific usecase.
-    - add the new databases as environment variables to the following files:
-      deployment.yaml, mqtt_kolibri/deployment.yaml, job_scheduler/deployments/beat.yaml, job_scheduler/deployments/flower.yaml, job_scheduler/deployments/worker.yaml
+  - set correct namespace for remaining deployments, services, configmaps and volumes.
+  - create a new volume, deployment and service for each database needed for the specific usecase.
+  - add the new databases as environment variables to the following files:
+    deployment.yaml, mqtt_kolibri/deployment.yaml, job_scheduler/deployments/beat.yaml, job_scheduler/deployments/flower.yaml, job_scheduler/deployments/worker.yaml
 
 ### Setting up Keycloak
   1.) Set up realm and client
