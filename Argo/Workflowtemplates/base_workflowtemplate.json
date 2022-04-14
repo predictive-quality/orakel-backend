@@ -1,0 +1,87 @@
+{
+  "namespace": "",
+  "template": {
+    "apiVersion": "argoproj.io/v1alpha1",
+    "kind": "WorkflowTemplate",
+    "metadata": {
+      "labels": {
+        "creator": "demonstrator"
+      },
+      "name": null,
+      "namespace": ""
+    },
+    "spec": {
+      "entrypoint": "main",
+      "imagePullSecrets": [
+        {
+          "name": "gitlab-argo-image-pull-secret"
+        }
+      ],
+      "volumes": [
+        {
+          "name": "s3-config-vol",
+          "secret": {
+            "secretName": "s3-predictive-quality-creds"
+          }
+        },
+        {
+          "name": "artifacts",
+          "emptyDir": {
+          }
+        }
+      ],
+      "serviceAccountName": "workflow-execution",
+      "templateDefaults": {
+        "inputs": {
+          "artifacts": [
+            {
+              "name": "artifacts-0",
+              "path": "/code/artifacts/input/0",
+              "optional": true
+            },
+            {
+              "name": "artifacts-1",
+              "path": "/code/artifacts/input/1",
+              "optional": true
+            },
+            {
+              "name": "artifacts-2",
+              "path": "/code/artifacts/input/2",
+              "optional": true
+            },
+            {
+              "name": "artifacts-3",
+              "path": "/code/artifacts/input/3",
+              "optional": true
+            },
+            {
+              "name": "artifacts-4",
+              "path": "/code/artifacts/input/4",
+              "optional": true
+            }
+          ]
+        },
+        "initContainers": [
+          {
+            "name": "fetch-artifacts",
+            "image": "registry.git-ce.rwth-aachen.de/wzl-mq-ms-rpc/code/research/predictive-quality/ml-pipline-blocks/merge-artifacts:v1.0.0",
+            "args": [
+              "--depth=5",
+              "--base_path=/code/artifacts/input",
+              "--output_path=/code/artifacts/input"
+            ],
+            "mirrorVolumeMounts": true
+          }
+        ]
+      },
+      "templates": [
+        {
+          "name": "main",
+          "dag": {
+            "tasks": []
+          }
+        }
+      ]
+    }
+  }
+}
